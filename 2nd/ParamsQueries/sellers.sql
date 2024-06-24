@@ -5,7 +5,7 @@ WITH Seller_Info AS (
         COUNT(bk.Ticket_id) AS Tickets_Sold
     FROM 
         TicketSeller ts
-    JOIN 
+    right JOIN 
         Booking bk ON ts.Seller_id = bk.Seller_id
     JOIN 
         Ticket t ON bk.Ticket_id = t.Ticket_id

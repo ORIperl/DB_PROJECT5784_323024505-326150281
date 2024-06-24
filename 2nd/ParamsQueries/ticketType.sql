@@ -5,7 +5,7 @@ WITH Ticket_Type_Sales AS (
         SUM(t.Ticket_price) AS Total_Sales
     FROM 
         TicketSeller ts
-    JOIN 
+    left JOIN 
         Booking bk ON ts.Seller_id = bk.Seller_id
     JOIN 
         Ticket t ON bk.Ticket_id = t.Ticket_id
