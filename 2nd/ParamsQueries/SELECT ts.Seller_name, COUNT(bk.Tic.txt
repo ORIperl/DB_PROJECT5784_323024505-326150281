@@ -1,32 +1,18 @@
-WITH Seller_Info AS (
-    SELECT 
-        ts.Seller_name,
-        SUM(t.Ticket_price) AS Total_Sales_Price,
-        COUNT(bk.Ticket_id) AS Tickets_Sold
-    FROM 
-        TicketSeller ts
-    JOIN 
-        Booking bk ON ts.Seller_id = bk.Seller_id
-    JOIN 
-        Ticket t ON bk.Ticket_id = t.Ticket_id
-    WHERE 
-        bk.Booking_date > TO_DATE('2023-06-18', 'YYYY-MM-DD')
-    GROUP BY 
-        ts.Seller_name
-),
-Max_Tickets_Sold AS (
-    SELECT 
-        MAX(Tickets_Sold) AS Max_Sold
-    FROM 
-        Seller_Info
-)
 SELECT 
-    si.Seller_name, 
-    si.Tickets_Sold,
-    si.Total_Sales_Price
+    ts.Seller_name,
+    ts.Seller_id,
+    bk.Booking_id,
+    t.Ticket_id,
+    t.Ticket_type,
+    t.Ticket_price,
+    bk.Booking_date
 FROM 
-    Seller_Info si
+    TicketSeller ts
 JOIN 
-    Max_Tickets_Sold m ON si.Tickets_Sold = m.Max_Sold
+    Booking bk ON ts.Seller_id = bk.Seller_id
+JOIN 
+    Ticket t ON bk.Ticket_id = t.Ticket_id
+WHERE 
+    ts.Seller_name = &name
 ORDER BY 
-    si.Total_Sales_Price DESC;
+    bk.Booking_date DESC;

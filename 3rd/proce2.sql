@@ -1,22 +1,41 @@
 CREATE OR REPLACE PROCEDURE Calculate_Total_Sales IS
-    CURSOR cur_ticket_type IS
-        SELECT DISTINCT Ticket_type
-        FROM Ticket;
-    rec_ticket_type cur_ticket_type%ROWTYPE;
-    total_sales NUMBER;
-BEGIN
-    OPEN cur_ticket_type;
-    LOOP
-        FETCH cur_ticket_type INTO rec_ticket_type;
-        EXIT WHEN cur_ticket_type%NOTFOUND;
-
-        SELECT SUM(Ticket_price) INTO total_sales
+    CURSOR cur_ticket IS
+        SELECT Ticket_type, SUM(Ticket_price) AS Total_Sales
         FROM Ticket
-        WHERE Ticket_type = rec_ticket_type.Ticket_type;
+        GROUP BY Ticket_type;
+    
+    rec_ticket cur_ticket%ROWTYPE;
+    new_price NUMBER;
+BEGIN
+    OPEN cur_ticket;
+    LOOP
+        FETCH cur_ticket INTO rec_ticket;
+        EXIT WHEN cur_ticket%NOTFOUND;
 
-        DBMS_OUTPUT.PUT_LINE('Ticket Type: ' || rec_ticket_type.Ticket_type || ', Total Sales: ' || total_sales);
+        -- Set new price based on ticket type
+        CASE rec_ticket.Ticket_type
+            WHEN 'regular' THEN
+                new_price := 10;
+            WHEN 'special' THEN
+                new_price := 15;
+            WHEN 'handicapped' THEN
+                new_price := 5;
+            ELSE
+                new_price := rec_ticket.Total_Sales / 100; -- Default price if type doesn't match
+        END CASE;
+
+        -- Update ticket prices
+        UPDATE Ticket
+        SET Ticket_price = new_price
+        WHERE Ticket_type = rec_ticket.Ticket_type;
+
+        DBMS_OUTPUT.PUT_LINE('Ticket Type: ' || rec_ticket.Ticket_type || 
+                             ', Total Sales: ' || rec_ticket.Total_Sales || 
+                             ', New Price: ' || new_price);
     END LOOP;
-    CLOSE cur_ticket_type;
+    CLOSE cur_ticket;
+    
+    DBMS_OUTPUT.PUT_LINE('Total sales calculated and ticket prices updated successfully.');
 EXCEPTION
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
